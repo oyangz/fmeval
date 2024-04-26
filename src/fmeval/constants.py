@@ -74,6 +74,7 @@ class DatasetColumns(Enum):
     SENT_LESS_PROMPT = Column(name="sent_less_prompt")
     SENT_MORE_LOG_PROB = Column(name="sent_more_log_prob", should_cast=False)
     SENT_LESS_LOG_PROB = Column(name="sent_less_log_prob", should_cast=False)
+    TARGET_CONTEXT = Column(name="target_context", should_cast=False)
 
 
 DATASET_COLUMNS = OrderedDict((col.value.name, col) for col in DatasetColumns)

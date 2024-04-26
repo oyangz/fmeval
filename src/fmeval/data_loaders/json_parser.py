@@ -175,24 +175,38 @@ class JsonParser:
                 f"the {args.column.value.name} column of dataset `{args.dataset_name}`, but found at least "
                 "one value that is None.",
             )
-            require(
-                all(not isinstance(x, list) for x in result),
-                f"Expected a 1D array using JMESPath '{args.jmespath_parser.expression}' on dataset "
-                f"`{args.dataset_name}`, where each element of the array is a sample's {args.column.value.name}, "
-                f"but found at least one nested array.",
-            )
+            if args.column.value.name == DatasetColumns.TARGET_CONTEXT.value.name:
+                require(
+                    all(isinstance(x, list) for x in result),
+                    f"Expected a 2D array using JMESPath '{args.jmespath_parser.expression}' on dataset "
+                    f"`{args.dataset_name}` but found at least one non-list object.",
+                )
+            else:
+                require(
+                    all(not isinstance(x, list) for x in result),
+                    f"Expected a 1D array using JMESPath '{args.jmespath_parser.expression}' on dataset "
+                    f"`{args.dataset_name}`, where each element of the array is a sample's {args.column.value.name}, "
+                    f"but found at least one nested array.",
+                )
         elif args.dataset_mime_type == MIME_TYPE_JSONLINES:
             require(
                 result is not None,
                 f"Found no values using {args.column.value.name} JMESPath '{args.jmespath_parser.expression}' "
                 f"on dataset `{args.dataset_name}`.",
             )
-            require(
-                not isinstance(result, list),
-                f"Expected to find a single value using {args.column.value.name} JMESPath "
-                f"'{args.jmespath_parser.expression}' on a dataset line in "
-                f"dataset `{args.dataset_name}`, but found a list instead.",
-            )
+            if args.column.value.name == DatasetColumns.TARGET_CONTEXT.value.name:
+                require(
+                    isinstance(result, list),
+                    f"Expected to find a List using JMESPath '{args.jmespath_parser.expression}' on a dataset line in "
+                    f"`{args.dataset_name}`, but found a non-list object instead.",
+                )
+            else:
+                require(
+                    not isinstance(result, list),
+                    f"Expected to find a single value using {args.column.value.name} JMESPath "
+                    f"'{args.jmespath_parser.expression}' on a dataset line in "
+                    f"dataset `{args.dataset_name}`, but found a list instead.",
+                )
         else:  # pragma: no cover
             raise EvalAlgorithmInternalError(
                 f"args.dataset_mime_type is {args.dataset_mime_type}, but only JSON " "and JSON Lines are supported."
